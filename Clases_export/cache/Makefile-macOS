@@ -1,0 +1,28 @@
+CXX      := clang++
+CXXFLAGS ?= -O2 -std=c++14
+SRC      := src
+BINDIR   ?= bin
+
+# Nota: en Apple Silicon (M1/M2/M3) usar -mcpu=native en lugar de -march=native.
+# Ejemplos de uso:
+#   make -f Makefile-macOS BINDIR=bin/O0      CXXFLAGS="-O0 -std=c++14"
+#   make -f Makefile-macOS BINDIR=bin/O2      CXXFLAGS="-O2 -std=c++14"
+#   make -f Makefile-macOS BINDIR=bin/O3      CXXFLAGS="-O3 -mcpu=native -std=c++14"
+#   make -f Makefile-macOS BINDIR=bin/O3fast  CXXFLAGS="-O3 -mcpu=native -ffast-math -std=c++14"
+
+KERNELS := dot \
+           matvec_row matvec_col \
+           matmul_ijk matmul_ikj matmul_jki
+
+.PHONY: all clean
+
+all: $(addprefix $(BINDIR)/, $(KERNELS))
+
+$(BINDIR)/%: $(SRC)/main_%.cpp $(SRC)/common.hpp | $(BINDIR)
+	$(CXX) $(CXXFLAGS) -o $@ $<
+
+$(BINDIR):
+	mkdir -p $(BINDIR)
+
+clean:
+	rm -rf bin
