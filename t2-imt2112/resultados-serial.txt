@@ -1,0 +1,7 @@
+N=2048 n=2048 tiempo=5556.47 ms checksum=172.331627
+N=2048 n=1024 tiempo=4492.28 ms checksum=172.331627
+N=2048 n=512 tiempo=3690.77 ms checksum=172.331627
+N=2048 n=256 tiempo=3317.72 ms checksum=172.331627
+N=2048 n=128 tiempo=3634.71 ms checksum=172.331627
+N=2048 n=64 tiempo=2979.03 ms checksum=172.331627
+N=2048 n=32 tiempo=3653.48 ms checksum=172.331627
