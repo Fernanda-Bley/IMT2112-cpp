@@ -1,0 +1,16 @@
+=== Algoritmo 1: Paralelismo de Datos con OpenMP ===
+Tamaño de matriz: N = 2048
+Número total de elementos: 4194304
+
+Matrices generadas.
+
+Ejecutando versión secuencial...
+Tiempo secuencial: 1079.62 ms
+
+Threads    Tiempo (ms)     Speedup         Eficiencia     
+-------    -----------     -------         ----------     
+1          880.25          1.23            1.23           
+2          862.51          1.25            0.63           
+4          784.70          1.38            0.34           
+8          780.54          1.38            0.17           
+
