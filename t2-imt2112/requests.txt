@@ -1,0 +1,16 @@
+pandas
+numpy
+coverage
+engarde
+ipython
+jupyter
+matplotlib
+notebook
+seaborn
+tqdm
+watermark
+scikit-learn
+scipy
+nbdime
+runipy
+numba

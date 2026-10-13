@@ -1,0 +1,8 @@
+Algoritmo 1: OpenMP Data Parallelism
+N: 2048
+Tiempo Secuencial Referencia: 5418.22 ms
+Threads	Tiempo (ms)	Speedup (vs Seq)	Eficiencia (vs Seq)	Speedup (vs P=1)	Eficiencia (vs P=1)
+1	4905.43	1.10453	1.10453	1	1
+2	4625.44	1.1714	0.585698	1.06053	0.530267
+4	4463.85	1.2138	0.30345	1.09892	0.274731
+8	4571.78	1.18515	0.148143	1.07298	0.134123

@@ -3,7 +3,11 @@
 #include <omp.h>
 #include <chrono>
 #include <cmath>
+#include <fstream> // Para guardar en archivo
+#include <iostream> // Para std::cerr
+#include <string>    // Para std::string
 
+#define MATRIX_SIZE 2048
 #define MATRIX_SIZE 2048  // Cambiado de N a MATRIX_SIZE para evitar conflicto
 #define RANGE 10
 
@@ -66,39 +70,49 @@ void matmul_parallel_omp(float* A, float* B, float* C, int n, int num_threads)
 
 int main()
 {
-    srand(42); // Semilla fija para reproducibilidad
+    srand(42); 
+    
+    // Configuración
+    int threads_list[] = {1, 2, 4, 8};
+    int num_configs = sizeof(threads_list) / sizeof(threads_list[0]);
     
     printf("=== Algoritmo 1: Paralelismo de Datos con OpenMP ===\n");
     printf("Tamaño de matriz: N = %d\n", MATRIX_SIZE);
-    printf("Número total de elementos: %d\n", MATRIX_SIZE * MATRIX_SIZE);
-    printf("\n");
     
     // Generar matrices
     float* A = matrix_generator(MATRIX_SIZE, RANGE);
     float* B = matrix_generator(MATRIX_SIZE, RANGE);
     float* C_ref = (float*) calloc(MATRIX_SIZE * MATRIX_SIZE, sizeof(float));
     
-    printf("Matrices generadas.\n\n");
-    
-    // Ejecutar versión secuencial para obtener tiempo de referencia
-    printf("Ejecutando versión secuencial...\n");
+    printf("Ejecutando versión secuencial de referencia...\n");
     auto start_seq = std::chrono::high_resolution_clock::now();
     matmul_sequential(A, B, C_ref, MATRIX_SIZE);
     auto end_seq = std::chrono::high_resolution_clock::now();
     double time_seq = std::chrono::duration<double, std::milli>(end_seq - start_seq).count();
-    printf("Tiempo secuencial: %.2f ms\n\n", time_seq);
     
-    // Probar con diferentes números de threads
-    int threads[] = {1, 2, 4, 8};
-    int num_configs = sizeof(threads) / sizeof(threads[0]);
+    // Abrir archivo para guardar resultados
+    std::ofstream outfile("resultados-alg1.txt");
+    if (!outfile.is_open()) {
+        std::cerr << "Error al abrir el archivo de salida." << std::endl;
+        return 1;
+    }
+
+    // Escribir encabezado en archivo y consola
+    std::string header = "Algoritmo 1: OpenMP Data Parallelism\nN: " + std::to_string(MATRIX_SIZE) + "\n";
+    std::string cols = "Threads\tTiempo (ms)\tSpeedup (vs Seq)\tEficiencia (vs Seq)\tSpeedup (vs P=1)\tEficiencia (vs P=1)\n";
     
-    printf("%-10s %-15s %-15s %-15s\n", "Threads", "Tiempo (ms)", "Speedup", "Eficiencia");
-    printf("%-10s %-15s %-15s %-15s\n", "-------", "-----------", "-------", "----------");
+    std::cout << header;
+    std::cout << "Tiempo Secuencial Referencia: " << time_seq << " ms\n\n";
+    std::cout << cols;
     
-    double times[num_configs];
-    
+    outfile << header;
+    outfile << "Tiempo Secuencial Referencia: " << time_seq << " ms\n";
+    outfile << cols;
+
+    double time_p1 = 0.0; // Para guardar el tiempo con 1 thread y calcular speedup relativo
+
     for (int t = 0; t < num_configs; t++) {
-        int p = threads[t];
+        int p = threads_list[t];
         float* C = (float*) calloc(MATRIX_SIZE * MATRIX_SIZE, sizeof(float));
         
         auto start = std::chrono::high_resolution_clock::now();
@@ -106,32 +120,35 @@ int main()
         auto end = std::chrono::high_resolution_clock::now();
         
         double time_p = std::chrono::duration<double, std::milli>(end - start).count();
-        times[t] = time_p;
         
-        // Calcular speedup y eficiencia
-        double speedup = time_seq / time_p;
-        double efficiency = speedup / p;
-        
-        printf("%-10d %-15.2f %-15.2f %-15.2f\n", p, time_p, speedup, efficiency);
-        
-        // Verificación opcional (comentar para producción)
-        if (t == 0) {
-            bool correct = true;
-            for (int i = 0; i < MATRIX_SIZE * MATRIX_SIZE && i < 1000; i++) {
-                if (std::abs(C[i] - C_ref[i]) > 0.1) {
-                    correct = false;
-                    break;
-                }
-            }
-            if (!correct) {
-                printf("¡ADVERTENCIA! Resultados incorrectos para %d threads\n", p);
-            }
+        // Guardar tiempo de p=1 para cálculos posteriores
+        if (p == 1) {
+            time_p1 = time_p;
         }
+
+        // Calcular métricas
+        // Opción A: Comparado con secuencial puro
+        double speedup_seq = time_seq / time_p;
+        double efficiency_seq = speedup_seq / p;
+        
+        // Opción B: Comparado con paralelismo de 1 hilo (más justo para overhead de OpenMP)
+        double speedup_p1 = (time_p1 > 0) ? time_p1 / time_p : 0;
+        double efficiency_p1 = (p == 1) ? 1.0 : speedup_p1 / p;
+
+        // Imprimir en consola
+        printf("%d\t%.2f\t\t%.2f\t\t%.2f\t\t%.2f\t\t%.2f\n", 
+               p, time_p, speedup_seq, efficiency_seq, speedup_p1, efficiency_p1);
+        
+        // Guardar en archivo
+        outfile << p << "\t" << time_p << "\t" 
+                << speedup_seq << "\t" << efficiency_seq << "\t"
+                << speedup_p1 << "\t" << efficiency_p1 << "\n";
         
         free_matrix(C);
     }
     
-    printf("\n");
+    outfile.close();
+    printf("\nResultados guardados en resultados_alg1_omp.txt\n");
     
     // Liberar memoria
     free_matrix(A);

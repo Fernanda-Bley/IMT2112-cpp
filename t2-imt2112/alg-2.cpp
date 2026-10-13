@@ -3,6 +3,9 @@
 #include <omp.h>
 #include <chrono>
 #include <cmath>
+#include <vector>
+#include <iostream>
+#include <fstream> // Para guardar en archivo si lo deseas
 
 #define DEFAULT_N 2048
 #define DEFAULT_BLOCK 64
@@ -55,7 +58,6 @@ void multiply_and_accumulate(float* C, float* A, float* B, int n,
                              int row_off_b, int col_off_b, int stride_b,
                              int row_off_c, int col_off_c, int stride_c) {
     
-    // Extraer subbloques temporalmente o calcular índices directamente
     for (int i = 0; i < n; ++i) {
         for (int k = 0; k < n; ++k) {
             float a_val = A[(row_off_a + i) * stride_a + (col_off_a + k)];
@@ -70,7 +72,6 @@ void multiply_and_accumulate(float* C, float* A, float* B, int n,
 // Algoritmo 2: Dividir y Conquistar Paralelo
 void matmul_divide_conquer_parallel(float* A, float* B, float* C, int N, int block_size) {
     
-    // Caso base: si el tamaño es menor o igual al bloque base, usar multiplicación densa
     if (N <= block_size) {
         matmul_base(A, B, C, N);
         return;
@@ -78,28 +79,21 @@ void matmul_divide_conquer_parallel(float* A, float* B, float* C, int N, int blo
     
     int half = N / 2;
     
-    // Paralelismo de tareas: los 8 productos de bloques son independientes
     #pragma omp parallel sections
     {
-        // C11 = A11*B11 + A12*B21
         #pragma omp section
         {
-            // Inicializar bloque C11 a cero
             for (int i = 0; i < half; ++i)
                 for (int j = 0; j < half; ++j)
                     C[i * N + j] = 0.0f;
             
-            // A11 * B11 -> C11
             matmul_divide_conquer_parallel(A, B, C, half, block_size);
-            
-            // A12 * B21 -> C11 (acumular)
             multiply_and_accumulate(C, A, B, half,
-                                   0, half, N,      // A12
-                                   half, 0, N,      // B21
-                                   0, 0, N);        // C11
+                                   0, half, N,      
+                                   half, 0, N,      
+                                   0, 0, N);        
         }
         
-        // C12 = A11*B12 + A12*B22
         #pragma omp section
         {
             for (int i = 0; i < half; ++i)
@@ -113,7 +107,6 @@ void matmul_divide_conquer_parallel(float* A, float* B, float* C, int N, int blo
                                    0, half, N);
         }
         
-        // C21 = A21*B11 + A22*B21
         #pragma omp section
         {
             for (int i = 0; i < half; ++i)
@@ -127,7 +120,6 @@ void matmul_divide_conquer_parallel(float* A, float* B, float* C, int N, int blo
                                    half, 0, N);
         }
         
-        // C22 = A21*B12 + A22*B22
         #pragma omp section
         {
             for (int i = 0; i < half; ++i)
@@ -146,13 +138,15 @@ void matmul_divide_conquer_parallel(float* A, float* B, float* C, int N, int blo
 int main(int argc, char* argv[]) {
     int N = DEFAULT_N;
     int block_size = DEFAULT_BLOCK;
+    
+    // Lista de threads a probar
+    std::vector<int> threads_list = {1, 2, 4, 8};
 
-    // Leer tamaño del bloque
+    // Leer tamaño del bloque desde argumentos si existe
     if (argc > 1) {
-        block_size = atoi(argv[1]); // Convierte string a entero
+        block_size = atoi(argv[1]); 
     }
     
-    // Validación básica
     if (block_size <= 0 || block_size > N) {
         printf("Error: El tamaño de bloque debe estar entre 1 y %d\n", N);
         return 1;
@@ -162,32 +156,76 @@ int main(int argc, char* argv[]) {
 
     printf("=== Algoritmo 2: Dividir y Conquistar ===\n");
     printf("N = %d, Block Size (n) = %d\n", N, block_size);
-    printf("Profundidad del árbol: %.2f\n", log2((double)N / block_size));
     
-    // Generar matrices
+    // Generar matrices A y B una sola vez
     float* A = matrix_generator(N, RANGE);
     float* B = matrix_generator(N, RANGE);
-    float* C = (float*)calloc(N * N, sizeof(float));
-
-    // Warm-up
-    matmul_divide_conquer_parallel(A, B, C, N, block_size); 
-    // Reiniciar C a 0 después del warm-up si lo usas
-    for(int i=0; i<N*N; i++) C[i] = 0.0f;
-
-    // Medición
-    auto start = std::chrono::high_resolution_clock::now();
     
-    matmul_divide_conquer_parallel(A, B, C, N, block_size);
+    // Abrir archivo para guardar resultados
+    std::ofstream outfile("resultados-alg-2.txt");
+    if (!outfile.is_open()) {
+        std::cerr << "Error al abrir el archivo de salida." << std::endl;
+        return 1;
+    }
     
-    auto end = std::chrono::high_resolution_clock::now();
-    double time_ms = std::chrono::duration<double, std::milli>(end - start).count();
+    // Encabezado para el archivo
+    outfile << "Algoritmo 2: Dividir y Conquistar\n";
+    outfile << "N = " << N << ", Block Size = " << block_size << "\n";
+    outfile << "Threads\tTiempo (ms)\tSpeedup (vs P=1)\tEficiencia (vs P=1)\n";
+    outfile << "--------------------------------------------------------\n";
 
-    printf("Tiempo de ejecución: %.4f ms\n", time_ms);
+    // Encabezado para consola
+    printf("%-10s %-15s %-15s %-15s\n", "Threads", "Tiempo (ms)", "Speedup", "Eficiencia");
+    printf("%-10s %-15s %-15s %-15s\n", "-------", "-----------", "-------", "----------");
 
-    // Liberar memoria
+    double time_p1 = 0.0; // Variable para guardar el tiempo con 1 thread
+
+    for (int p : threads_list) {
+        // Crear una copia fresca de C para cada medición
+        float* C = (float*)calloc(N * N, sizeof(float));
+        
+        // Establecer el número de threads para OpenMP
+        omp_set_num_threads(p);
+        
+        // Warm-up
+        matmul_divide_conquer_parallel(A, B, C, N, block_size);
+        
+        // Reiniciar C a 0 después del warm-up
+        for(int i=0; i<N*N; i++) C[i] = 0.0f;
+
+        // Medición real
+        auto start = std::chrono::high_resolution_clock::now();
+        
+        matmul_divide_conquer_parallel(A, B, C, N, block_size);
+        
+        auto end = std::chrono::high_resolution_clock::now();
+        double time_ms = std::chrono::duration<double, std::milli>(end - start).count();
+
+        // Guardar tiempo de p=1 para usarlo como referencia
+        if (p == 1) {
+            time_p1 = time_ms;
+        }
+
+        // Calcular Speedup y Eficiencia respecto a P=1
+        double speedup = (time_p1 > 0) ? time_p1 / time_ms : 0.0;
+        double efficiency = (p > 0) ? speedup / p : 0.0;
+
+        // Imprimir en consola con formato tabulado
+        printf("%-10d %-15.2f %-15.2f %-15.2f\n", p, time_ms, speedup, efficiency);
+        
+        // Guardar en archivo
+        outfile << p << "\t" << time_ms << "\t" << speedup << "\t" << efficiency << "\n";
+
+        // Liberar C actual antes de la siguiente iteración
+        free_matrix(C);
+    }
+    
+    outfile.close();
+    printf("\nResultados guardados en resultados-alg-2.txt\n");
+
+    // Liberar memoria de A y B
     free_matrix(A);
     free_matrix(B);
-    free_matrix(C);
 
     return 0;
 }
