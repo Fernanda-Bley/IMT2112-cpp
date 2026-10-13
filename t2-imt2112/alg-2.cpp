@@ -144,7 +144,7 @@ int main(int argc, char* argv[]) {
 
     // Leer tamaño del bloque desde argumentos si existe
     if (argc > 1) {
-        block_size = atoi(argv[1]); 
+        N = atoi(argv[1]); 
     }
     
     if (block_size <= 0 || block_size > N) {
