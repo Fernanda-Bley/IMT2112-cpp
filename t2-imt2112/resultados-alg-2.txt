@@ -1,0 +1,28 @@
+=== Algoritmo 2: Dividir y Conquistar ===
+N = 2048, Block Size (n) = 2048
+Profundidad del árbol: 0.00
+Tiempo de ejecución: 1062.4965 ms
+=== Algoritmo 2: Dividir y Conquistar ===
+N = 2048, Block Size (n) = 1024
+Profundidad del árbol: 1.00
+Tiempo de ejecución: 768.8287 ms
+=== Algoritmo 2: Dividir y Conquistar ===
+N = 2048, Block Size (n) = 512
+Profundidad del árbol: 2.00
+Tiempo de ejecución: 1329.2865 ms
+=== Algoritmo 2: Dividir y Conquistar ===
+N = 2048, Block Size (n) = 256
+Profundidad del árbol: 3.00
+Tiempo de ejecución: 870.8565 ms
+=== Algoritmo 2: Dividir y Conquistar ===
+N = 2048, Block Size (n) = 128
+Profundidad del árbol: 4.00
+Tiempo de ejecución: 873.1536 ms
+=== Algoritmo 2: Dividir y Conquistar ===
+N = 2048, Block Size (n) = 64
+Profundidad del árbol: 5.00
+Tiempo de ejecución: 952.7373 ms
+=== Algoritmo 2: Dividir y Conquistar ===
+N = 2048, Block Size (n) = 32
+Profundidad del árbol: 6.00
+Tiempo de ejecución: 913.3449 ms
