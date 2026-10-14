@@ -1,5 +1,5 @@
 Algoritmo 1: OpenMP Data Parallelism
-N = 1024, Block Size = 64
+N = 2048, Block Size = 64
 Threads	Tiempo (ms)	Speedup (vs P=1)	Eficiencia (vs P=1)
 --------------------------------------------------------
 1	12512.8	1	1

@@ -142,13 +142,23 @@ int main(int argc, char* argv[]) {
     // Lista de threads a probar
     std::vector<int> threads_list = {1, 2, 4, 8};
 
-    // Leer tamaño del bloque desde argumentos si existe
+    // Leer argumentos desde la línea de comandos
     if (argc > 1) {
         N = atoi(argv[1]); 
     }
-    
+    if (argc > 2) {
+        block_size = atoi(argv[2]); // Aquí leemos el segundo argumento (n)
+    }
+
+    // Validación de argumentos
+    if (argc < 3 || N <= 0) {
+        printf("Uso: %s <N> <block_size>\n", argv[0]);
+        printf("Ejemplo: %s 2048 64\n", argv[0]);
+        return 1;
+    }
+
     if (block_size <= 0 || block_size > N) {
-        printf("Error: El tamaño de bloque debe estar entre 1 y %d\n", N);
+        printf("Error: El tamaño de bloque (n) debe estar entre 1 y %d\n", N);
         return 1;
     }
 

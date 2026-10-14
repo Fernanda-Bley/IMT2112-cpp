@@ -7,6 +7,7 @@
 
 
 ./tarea-2
+
 # Executables and debug files
 main
 *.exe
@@ -49,3 +50,4 @@ main
 
 # Prerequisites
 *.d
+t2-imt2112/32-resultados-alg-2.txt
