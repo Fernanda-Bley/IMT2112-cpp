@@ -116,15 +116,7 @@ int main(int argc, char* argv[])
 
     // Encabezados
     std::string header = "Algoritmo 1: OpenMP Data Parallelism\nN: " + std::to_string(N) + "\n";
-    std::string cols = "Threads\tTiempo (ms)\tSpeedup (vs Seq)\tEficiencia (vs Seq)\tSpeedup (vs P=1)\tEficiencia (vs P=1)\n";
-    
-    std::cout << header;
-    std::cout << "Tiempo Secuencial Referencia: " << time_seq << " ms\n\n";
-    std::cout << cols;
-    
-    outfile << header;
-    outfile << "Tiempo Secuencial Referencia: " << time_seq << " ms\n";
-    outfile << cols;
+    std::string cols = "Threads\tTiempo (ms)\tSpeedup (vs P=1)\tEficiencia (vs P=1)\n";
 
     double time_p1 = 0.0; 
 
@@ -142,17 +134,14 @@ int main(int argc, char* argv[])
         }
 
         // Métricas
-        double speedup_seq = time_seq / time_p;
-        double efficiency_seq = speedup_seq / p;
         
         double speedup_p1 = (time_p1 > 0) ? time_p1 / time_p : 0;
         double efficiency_p1 = (p == 1) ? 1.0 : speedup_p1 / p;
 
-        printf("%d\t%.2f\t\t%.2f\t\t%.2f\t\t%.2f\t\t%.2f\n", 
-               p, time_p, speedup_seq, efficiency_seq, speedup_p1, efficiency_p1);
+        printf("%d\t%.2f\t\t%.2f\t\t%.2f", 
+               p, time_p, speedup_p1, efficiency_p1);
         
-        outfile << p << "\t" << time_p << "\t" 
-                << speedup_seq << "\t" << efficiency_seq << "\t"
+        outfile << p << "\t" << time_p << "\t"
                 << speedup_p1 << "\t" << efficiency_p1 << "\n";
         
         free_matrix(C);
