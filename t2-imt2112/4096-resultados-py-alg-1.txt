@@ -1,0 +1,8 @@
+Algoritmo: Multiplicación de Matrices con Numba
+Tamaño de Matriz (N): 2048
+Threads	Tiempo (ms)	Speedup (vs P=1)	Eficiencia (vs P=1)
+------------------------------------------------------------
+1	17662.72	1.00	1.00
+2	17555.14	1.01	0.50
+4	17445.37	1.01	0.25
+8	17140.50	1.03	0.13
