@@ -1,16 +1,9 @@
 pandas
 numpy
-coverage
-engarde
 ipython
+ipykernel
 jupyter
 matplotlib
 notebook
 seaborn
-tqdm
-watermark
-scikit-learn
-scipy
-nbdime
-runipy
 numba

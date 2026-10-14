@@ -1,0 +1,8 @@
+Algoritmo 2: Dividir y Conquistar
+N = 2048, Block Size = 64
+Threads	Tiempo (ms)	Speedup (vs P=1)	Eficiencia (vs P=1)
+--------------------------------------------------------
+1	5297.71	1	1
+2	4209.54	1.2585	0.62925
+4	2936.84	1.80388	0.45097
+8	3101.94	1.70787	0.213483

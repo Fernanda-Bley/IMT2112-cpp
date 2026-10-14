@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#define DEFAULT_N 2048
+#define DEFAULT_N 1024
 #define DEFAULT_BLOCK 64
 #define RANGE 10
 

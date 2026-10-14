@@ -1,0 +1,8 @@
+Algoritmo 1: Paralelismo de Datos con OpenMP
+N = 2048, Block Size = 64
+Threads	Tiempo (ms)	Speedup (vs P=1)	Eficiencia (vs P=1)
+--------------------------------------------------------
+1	10575.9	1	1
+2	5851.39	1.80741	0.903706
+4	9087.84	1.16374	0.290935
+8	7351	1.4387	0.179837
